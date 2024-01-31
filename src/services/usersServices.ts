@@ -52,9 +52,26 @@ const validateUser = (data: unknown) => {
 };
 
 export const getUsers = async () => {
-  return await prisma.user.findMany();
+  const user = await prisma.user.findMany({
+    include: {
+      exercises: true,
+    },
+  });
+  const filteredUsers = user.map((user) => {
+    const { password, ...rest } = user;
+    return rest;
+  });
+
+  return filteredUsers;
 };
 
+/**
+ * Finds a user by their ID.
+ * @param id - The ID of the user.
+ * @returns The user object if found.
+ * @throws {Error} If the ID is not a number.
+ * @throws {Error} If the user is not found.
+ */
 export const findById = async (id: string) => {
   const parsedId = parseInt(id);
 
@@ -69,6 +86,9 @@ export const findById = async (id: string) => {
     where: {
       id: parsedId,
     },
+    include: {
+      exercises: true,
+    },
   });
 
   if (!user) {
@@ -81,6 +101,12 @@ export const findById = async (id: string) => {
   return user;
 };
 
+/**
+ * Adds a new user to the database.
+ *
+ * @param newUser - The new user object to be added.
+ * @returns A promise that resolves to the created user object.
+ */
 export const addUser = async (newUser: NewUser): Promise<User> => {
   const validatedUser = validateUser(newUser);
 
@@ -93,6 +119,12 @@ export const addUser = async (newUser: NewUser): Promise<User> => {
   return createdUser;
 };
 
+/**
+ * Deletes a user by their ID.
+ * @param id - The ID of the user to delete.
+ * @returns The deleted user.
+ * @throws {Error} If the ID is not a number or if the user is not found.
+ */
 export const deleteUser = async (id: string) => {
   const parsedId = parseInt(id);
 
@@ -119,6 +151,13 @@ export const deleteUser = async (id: string) => {
   return deletedUser;
 };
 
+/**
+ * Updates a user with the specified ID.
+ * @param id - The ID of the user to update.
+ * @param newUser - The new user data to update.
+ * @returns The updated user.
+ * @throws {Error} If the ID is not a number.
+ */
 export const updateUser = async (id: string, newUser: NewUserOptional) => {
   const parsedId = parseInt(id);
   const validatedUser = validateUser(newUser);

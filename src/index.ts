@@ -1,5 +1,5 @@
 import express from "express";
-import excersisesRoutes from "./routes/excersises.routes";
+import exercisesRoutes from "./routes/exercise.routes";
 import usersRoutes from "./routes/users.routes";
 
 const app = express();
@@ -7,7 +7,7 @@ app.use(express.json());
 
 const PORT = 3000;
 
-app.use("/api/exercises", excersisesRoutes);
+app.use("/api/exercises", exercisesRoutes);
 
 app.use("/api/users", usersRoutes);
 
