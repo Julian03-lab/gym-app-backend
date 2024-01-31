@@ -24,4 +24,35 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.delete("/:id", async (req, res) => {
+  try {
+    const deletedExercise = await exercisesServices.deleteExercise(
+      req.params.id
+    );
+    res.send(deletedExercise);
+  } catch (error: any) {
+    if (typeof error.code !== "number") {
+      res.status(404).send({ error });
+    } else {
+      res.status(error.code).send({ error });
+    }
+  }
+});
+
+router.put("/:id", async (req, res) => {
+  try {
+    const updatedExercise = await exercisesServices.updateExercise(
+      req.params.id,
+      req.body
+    );
+    res.send(updatedExercise);
+  } catch (error: any) {
+    if (typeof error.code !== "number") {
+      res.status(404).send({ error });
+    } else {
+      res.status(error.code).send({ error });
+    }
+  }
+});
+
 export default router;

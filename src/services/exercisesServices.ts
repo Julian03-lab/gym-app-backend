@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import z from "zod";
-import { NewExcercise } from "../types";
+import { NewExercise, NewExerciseOptional } from "../types";
 
 const prisma = new PrismaClient();
 
@@ -37,6 +37,23 @@ const exerciseSchema = z.object({
 
 const validateExercise = (data: unknown) => {
   const exercise = exerciseSchema.safeParse(data);
+
+  if (!exercise.success) {
+    throw {
+      message: exercise.error.errors[0].message,
+      code: 400,
+    };
+  }
+
+  return exercise.data;
+};
+
+const validatePartialExercise = (data: unknown) => {
+  //validate but cannot change owner id
+  const exercise = exerciseSchema
+    .omit({ ownerId: true })
+    .partial()
+    .safeParse(data);
 
   if (!exercise.success) {
     throw {
@@ -91,7 +108,7 @@ export const findById = async (id: string) => {
  * @returns The new exercise.
  * @throws {Error} If the exercise data is invalid.
  */
-export const addexercise = async (newExercise: NewExcercise) => {
+export const addexercise = async (newExercise: NewExercise) => {
   const validatedExercise = validateExercise(newExercise);
   const exercise = await prisma.exercise.create({
     data: {
@@ -102,58 +119,44 @@ export const addexercise = async (newExercise: NewExcercise) => {
   return exercise;
 };
 
-// export const deleteUser = async (id: string) => {
-//   const parsedId = parseInt(id);
+export const deleteExercise = async (id: string) => {
+  const parsedId = parseInt(id);
 
-//   if (isNaN(parsedId)) {
-//     throw {
-//       message: "Id must be a number",
-//       code: 400,
-//     };
-//   }
+  if (isNaN(parsedId)) {
+    throw {
+      message: "Id must be a number",
+      code: 400,
+    };
+  }
 
-//   const deletedUser = await prisma.user.delete({
-//     where: {
-//       id: parsedId,
-//     },
-//   });
+  const deletedExercise = await prisma.exercise.delete({
+    where: {
+      id: parsedId,
+    },
+  });
 
-//   if (!deletedUser) {
-//     throw {
-//       message: "User not found",
-//       code: 404,
-//     };
-//   }
+  return deletedExercise;
+};
 
-//   return deletedUser;
-// };
+export const updateExercise = async (id: string, data: NewExerciseOptional) => {
+  const parsedId = parseInt(id);
 
-// /**
-//  * Updates a user with the specified ID.
-//  * @param id - The ID of the user to update.
-//  * @param newUser - The new user data to update.
-//  * @returns The updated user.
-//  * @throws {Error} If the ID is not a number.
-//  */
-// export const updateUser = async (id: string, newUser: NewUserOptional) => {
-//   const parsedId = parseInt(id);
-//   const validatedUser = validateUser(newUser);
+  if (isNaN(parsedId)) {
+    throw {
+      message: "Id must be a number",
+      code: 400,
+    };
+  }
 
-//   if (isNaN(parsedId)) {
-//     throw {
-//       message: "Id must be a number",
-//       code: 400,
-//     };
-//   }
+  const validatedExercise = validatePartialExercise(data);
+  const updatedExercise = await prisma.exercise.update({
+    where: {
+      id: parsedId,
+    },
+    data: {
+      ...validatedExercise,
+    },
+  });
 
-//   const updatedUser = await prisma.user.update({
-//     where: {
-//       id: parsedId,
-//     },
-//     data: {
-//       ...validatedUser,
-//     },
-//   });
-
-//   return updatedUser;
-// };
+  return updatedExercise;
+};

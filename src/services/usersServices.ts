@@ -51,6 +51,19 @@ const validateUser = (data: unknown) => {
   return user.data;
 };
 
+const validatePartialUser = (data: unknown) => {
+  const user = userSchema.partial().safeParse(data);
+
+  if (!user.success) {
+    throw {
+      message: user.error.errors[0].message,
+      code: 400,
+    };
+  }
+
+  return user.data;
+};
+
 export const getUsers = async () => {
   const user = await prisma.user.findMany({
     include: {
@@ -160,7 +173,7 @@ export const deleteUser = async (id: string) => {
  */
 export const updateUser = async (id: string, newUser: NewUserOptional) => {
   const parsedId = parseInt(id);
-  const validatedUser = validateUser(newUser);
+  const validatedUser = validatePartialUser(newUser);
 
   if (isNaN(parsedId)) {
     throw {

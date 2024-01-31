@@ -50,7 +50,11 @@ router.put("/:id", async (req, res) => {
     const updatedUser = await usersServices.updateUser(req.params.id, req.body);
     res.send(updatedUser);
   } catch (error: any) {
-    res.status(error.code || 500).send({ error });
+    if (typeof error.code !== "number") {
+      res.status(404).send({ error });
+    } else {
+      res.status(error.code).send({ error });
+    }
   }
 });
 
